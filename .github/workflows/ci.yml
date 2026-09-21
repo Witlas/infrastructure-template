@@ -1,0 +1,86 @@
+---
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate shell script syntax
+        run: |
+          set -euo pipefail
+          mapfile -t shell_files < <(find scripts -type f -name "*.sh" | sort)
+          if [ "${#shell_files[@]}" -eq 0 ]; then
+            echo "No shell scripts found under scripts/"
+            exit 0
+          fi
+          for file in "${shell_files[@]}"; do
+            bash -n "$file"
+          done
+
+      - name: Run ShellCheck (if available)
+        run: |
+          set -euo pipefail
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            echo "ShellCheck not available on runner, skipping."
+            exit 0
+          fi
+          mapfile -t shell_files < <(find scripts -type f -name "*.sh" | sort)
+          if [ "${#shell_files[@]}" -eq 0 ]; then
+            echo "No shell scripts found under scripts/"
+            exit 0
+          fi
+          shellcheck "${shell_files[@]}"
+
+      - name: Lint YAML files
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .
+          strict: true
+          config_data: |
+            extends: default
+            rules:
+              line-length:
+                max: 160
+                level: warning
+              truthy:
+                check-keys: false
+            ignore: |
+              .git/
+              .github/ISSUE_TEMPLATE/*.md
+              .github/pull_request_template.md
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Ansible tooling
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install ansible-core==2.17.6 ansible-lint==24.9.2
+
+      - name: Validate Ansible syntax
+        run: |
+          set -euo pipefail
+          ansible-playbook --syntax-check \
+            -i ansible/inventory.ini \
+            ansible/playbooks/site.yml
+
+      - name: Lint Ansible playbooks
+        run: |
+          set -euo pipefail
+          ansible-lint ansible/playbooks/site.yml

@@ -4,17 +4,20 @@
 !.env.example
 
 # Secrets and encrypted files
-secrets/
+secrets/*
+!secrets/README.md
 *.pem
 *.key
 *.crt
 *.p12
 *.jks
 *.agekey
+*.sops.yaml
 
 # Ansible artifacts
 *.retry
 ansible/.vault_pass
+.ansible/
 
 # Logs and temporary files
 *.log
@@ -28,3 +31,9 @@ ansible/.vault_pass
 
 # Container runtime state
 compose/.env
+backups/
+
+# Terraform local state
+.terraform/
+*.tfstate
+*.tfstate.*
