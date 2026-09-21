@@ -3,48 +3,66 @@
 Reusable infrastructure template for bootstrapping new projects with Docker Compose and Ansible.
 
 > [!WARNING]
-> This repository is a starting point only. Review and adapt all configuration before production use.
+> Examples in this repository are placeholders. This template is **not production-ready** until you review, secure, and adapt it for your environment.
 
-## What this template includes
+## Use this template
 
-- `compose/docker-compose.yml` with Redis and MinIO services
-- `ansible/` baseline inventory and playbook scaffolding
-- `scripts/` helper scripts for deploy, health checks, and backups
-- `.env.example` placeholder configuration values
+1. Click **Use this template** on GitHub and create a new repository.
+2. Clone your new repository.
+3. Copy `.env.example` to `.env` and replace placeholder values.
+4. Update `ansible/inventory.ini` and `config/applications.tsv`.
+5. Run:
+   ```bash
+   ./scripts/deploy.sh
+   ./scripts/healthcheck.sh
+   ```
+
+## Repository overview
+
+| Path | Purpose |
+| --- | --- |
+| `compose/` | Docker Compose services for local/runtime platform components |
+| `ansible/` | Inventory, playbooks, and Ansible dependency definitions |
+| `config/` | Example app mapping data for deployment workflows |
+| `scripts/` | Helper scripts for deploy, healthcheck, and backups |
+| `secrets/` | Documentation-only directory for local/encrypted secret workflows |
+| `.env.example` | Placeholder environment configuration |
+| `.sops.yaml` | Example SOPS policy scaffold (replace recipients before use) |
 
 ## Prerequisites
 
 - Docker and Docker Compose plugin
-- Bash (for scripts)
-- Ansible 2.15+
-- Optional: `sops` for encrypted secrets management
+- Bash
+- Ansible 2.15+ (or compatible ansible-core)
+- Optional: `sops` and a managed key workflow
 
-## Quick start
+## Pre-deployment security checklist
 
-1. Create a repository from this template.
-2. Copy `.env.example` to `.env` and replace placeholders.
-3. Update `ansible/inventory.ini` and `config/applications.tsv` for your project.
-4. Start services:
-   ```bash
-   ./scripts/deploy.sh
-   ```
-5. Validate service health:
-   ```bash
-   ./scripts/healthcheck.sh
-   ```
+- [ ] `.env` values are replaced with project-specific secure values.
+- [ ] `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` are strong, non-placeholder credentials.
+- [ ] Inventory hosts/users are real values for your environment (no example placeholders).
+- [ ] No plaintext credentials, keys, or tokens are committed.
+- [ ] If storing encrypted secrets in-repo, SOPS recipients are your own team keys and workflow is approved.
+- [ ] External secret manager usage is defined for production.
 
-## Configuration and secrets
+## Local validation commands
 
-- Do **not** commit `.env`, private keys, or plaintext credentials.
-- Keep runtime secrets in a secure secret manager or encrypted files under `secrets/`.
-- If using SOPS, configure recipients in `.sops.yaml` before encryption.
+Run before opening pull requests:
 
-## Using this as a template
+```bash
+bash -n scripts/*.sh
+ansible-playbook --syntax-check -i ansible/inventory.ini ansible/playbooks/site.yml
+```
 
-- Click **Use this template** on GitHub.
-- Rename project-specific values in `.env`, inventory, and application mappings.
-- Add your own CI/CD and cloud-specific modules as needed.
+If `shellcheck` is installed locally:
 
-## Repository safety
+```bash
+shellcheck scripts/*.sh
+```
 
-This public template intentionally contains placeholder-only values and no production identifiers.
+## Secrets handling
+
+- Create your own local `secrets/` files as needed.
+- Never commit plaintext secrets.
+- Do not commit encrypted secrets unless your team explicitly supports safe encrypted-storage workflows.
+- Prefer external secret managers for production.
