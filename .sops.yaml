@@ -1,0 +1,6 @@
+# Example SOPS configuration.
+# Replace recipients with your own team key material before encrypting secrets.
+creation_rules:
+  - path_regex: secrets/.*\\.ya?ml$
+    encrypted_regex: '^(data|stringData)$'
+    age: []

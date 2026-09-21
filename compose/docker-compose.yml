@@ -1,0 +1,27 @@
+services:
+  redis:
+    image: ${REDIS_IMAGE}
+    container_name: ${PROJECT_NAME:-project}-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis-data:/data
+
+  minio:
+    image: ${MINIO_IMAGE}
+    container_name: ${PROJECT_NAME:-project}-minio
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_API_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    volumes:
+      - minio-data:/data
+
+volumes:
+  redis-data:
+  minio-data:

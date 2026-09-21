@@ -1,0 +1,30 @@
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Secrets and encrypted files
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+*.agekey
+
+# Ansible artifacts
+*.retry
+ansible/.vault_pass
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+.DS_Store
+
+# Editor and IDE
+.vscode/
+.idea/
+
+# Container runtime state
+compose/.env
